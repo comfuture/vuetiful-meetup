@@ -4,7 +4,15 @@ const express = require('express')
 const Cookie = require('universal-cookie')
 const app = express()
 const api = require('./api')
-const admin = require('../../src/plugins/firebase-admin-init')
+
+const admin = require('firebase-admin')
+const serviceAccount = require('./serviceAccountKey.json')
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: 'https://vuetiful-meetup.firebaseio.com'
+})
+
 
 const config = {
   dev: false,
