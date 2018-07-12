@@ -10,8 +10,12 @@ export const getters = {
 
 export const mutations = {
   user(state, user) {
-    let {uid, email, displayName} = user
-    state.user = {uid, email, displayName}
+    if (user) {
+      let {uid, email, displayName} = user
+      state.user = {uid, email, displayName}
+    } else {
+      state.user = null
+    }
   }
 }
 
