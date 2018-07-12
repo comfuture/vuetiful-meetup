@@ -13,6 +13,7 @@
     "firebase-functions": "^1.0.4",
     "lodash": "^4.17.4",
     "nuxt": "1.0.0-rc11",
+    "universal-cookie": "^2.2.0",
     "vue": "~2.4.2",
     "vue-meta": "^1.2.0",
     "vue-router": "^3.0.1",

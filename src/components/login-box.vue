@@ -24,18 +24,23 @@
   </section>
 </template>
 <script>
+import Cookie from 'universal-cookie'
+import { mapGetters } from 'vuex'
+
 export default {
   name: 'login-box',
   data() {
     return {
       email: '',
-      emailSent: false,
-      user: null
+      emailSent: false
     }
+  },
+  computed: {
+    ...mapGetters(['user'])
   },
   mounted() {
     firebase.auth().onAuthStateChanged(user => {
-      this.user = user
+      this.$store.commit('user', user)
     })
   },
   methods: {
@@ -55,7 +60,9 @@ export default {
     },
     signout() {
       firebase.auth().signOut().then(() => {
-        this.user = null
+        let ivy = new Cookie()
+        ivy.remove('_sess')
+        this.$store.commit('user', null)
         this.emailSent = false
         alert('안전하게 로그아웃 했습니다')
       }).catch(e => {
