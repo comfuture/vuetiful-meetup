@@ -7,7 +7,8 @@ module.exports = {
       {hid: 'description', name: 'description', content: 'Vuetiful Korea meetup'}
     ],
     link: [
-      {rel: 'icon', type: 'image/x-icon', href: '/favicon.ico'}
+      {rel: 'icon', type: 'image/x-icon', href: '/favicon.ico'},
+      {rel: 'stylesheet', type: 'text/css', href: 'https://cdn.jsdelivr.net/npm/semantic-ui@2.3.3/dist/semantic.min.css'}
     ],
     script: [
       {src: 'https://www.gstatic.com/firebasejs/5.2.0/firebase.js'}

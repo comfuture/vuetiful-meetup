@@ -1,7 +1,7 @@
 <template>
   <div id="app-wrapper">
     <div id="content-wrapper" class="mui--text-center">
-      <nuxt class="mui-container"/>
+      <nuxt class="ui container"/>
     </div>
     <app-footer></app-footer>
   </div>
