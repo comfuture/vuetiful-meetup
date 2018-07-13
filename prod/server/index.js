@@ -1,7 +1,18 @@
-const functions = require('firebase-functions');
-const { Nuxt } = require('nuxt');
-const express = require('express');
-const app = express();
+const functions = require('firebase-functions')
+const { Nuxt } = require('nuxt')
+const express = require('express')
+const Cookie = require('universal-cookie')
+const app = express()
+const api = require('./api')
+
+const admin = require('firebase-admin')
+const serviceAccount = require('./serviceAccountKey.json')
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: 'https://vuetiful-meetup.firebaseio.com'
+})
+
 
 const config = {
   dev: false,
@@ -10,16 +21,35 @@ const config = {
     publicPath: '/assets/'
   }
 }
-const nuxt = new Nuxt(config);
+const nuxt = new Nuxt(config)
 
-function handleRequest(req, res) {
-  res.set('Cache-Control', 'public, max-age=150, s-maxage=150');
+// inject universal firebase/auth user
+app.use((req, res, next) => {
+  let ivy = new Cookie(req.headers.cookie)
+  let idToken = ivy.get('_sess')
+  if (idToken) {
+    admin.auth().verifyIdToken(idToken).then(user => {
+      req.user = user
+      next()
+    }).catch(e => {
+      next()
+    })
+  } else {
+    next()
+  }
+})
+
+// add api routes middleware
+app.use('/api', api)
+
+// add nuxt renderer middleware
+app.use((req, res) => {
+  res.set('Cache-Control', 'public, max-age=150, s-maxage=150')
   return new Promise((resolve, reject) => {
     nuxt.render(req, res, promise => {
       promise.then(resolve).catch(reject)
     })
-  });
-}
+  })
+})
 
-app.use(handleRequest);
-exports.nuxtssr = functions.https.onRequest(app);
+exports.nuxtssr = functions.https.onRequest(app)
