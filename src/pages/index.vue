@@ -1,7 +1,6 @@
 <template>
   <section>
     <site-logo/>
-    <login-box/>
   </section>
 </template>
 

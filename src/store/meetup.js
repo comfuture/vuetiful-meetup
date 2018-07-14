@@ -8,7 +8,7 @@ export const state = () => ({
 
 export const getters = {
   all: state => state.index.map(id => [id, state.all[id]]),
-  get: state => id => state.all[id]
+  get: state => id => state.all[id] || {} // prevent getting property of undefined error
 }
 
 function applyIndex(state) {
@@ -43,6 +43,16 @@ export const mutations = {
 export const actions = {
   setIndex({commit}, indice) {
     commit('setIndex', indice)
+  },
+  fetch({commit}) {
+    return db.collection('meetup').get().then(snapshot => {
+      shapshot.forEach(doc => {
+        commit('set', doc)
+      })
+    })
+  },
+  get(_ctx, id) {
+    return db.collection('meetup').doc(id).get()
   },
   add(_ctx, data) {
     data.created_at = firebase.firestore.FieldValue.serverTimestamp() // add timestamp

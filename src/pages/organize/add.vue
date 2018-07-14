@@ -11,6 +11,13 @@
         <input type="text" v-model="meetup.place">
       </div>
       <div class="field">
+        <label for="">일시</label>
+        <flat-pickr v-model="meetup.date"
+          :config="{wrap: false, enableTime: true, dateFormat: 'Y-m-d H:i:S K'}"
+          placeholder="날짜 선택">
+        </flat-pickr>
+      </div>
+      <div class="field">
         <label for="">인원</label>
         <input type="text" v-model.number="meetup.maxAttendee">
       </div>
@@ -28,6 +35,7 @@ export default {
       meetup: {
         subject: '',
         place: '',
+        date: +new Date(),
         maxAttendee: 0,
         active: true
       }
@@ -36,6 +44,8 @@ export default {
   methods: {
     save() {
       this.loading = true
+      // XXX: why vue does not have .date model binding?
+      this.meetup.date = new Date(Date.parse(this.meetup.date))
       this.$store.dispatch('meetup/add', this.meetup).then(() => {
         this.loading = false
         this.$router.replace({name: 'organize'})
