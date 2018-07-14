@@ -12,7 +12,7 @@
       </div>
       <div class="field">
         <label for="">인원</label>
-        <input type="text" v-model="meetup.maxAttendee">
+        <input type="text" v-model.number="meetup.maxAttendee">
       </div>
       <button class="ui primary button" @click="save">생성</button>
     </div>
@@ -20,8 +20,6 @@
 </template>
 
 <script>
-import { db } from '~/plugins/firebase-init'
-
 export default {
   name: 'organize-new',
   data() {
@@ -38,7 +36,7 @@ export default {
   methods: {
     save() {
       this.loading = true
-      db.collection('meetup').add(this.meetup).then(() => {
+      this.$store.dispatch('meetup/add', this.meetup).then(() => {
         this.loading = false
         this.$router.replace({name: 'organize'})
       })

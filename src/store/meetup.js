@@ -1,4 +1,4 @@
-import { db } from '~/plugins/firebase-init'
+import firebase, { db } from '~/plugins/firebase-init'
 
 export const state = () => ({
   all: {},
@@ -31,13 +31,24 @@ export const mutations = {
     if ((ix = state.index.indexOf(id)) > -1) {
       state.index.splice(ix, 1)
     }
+  },
+  setIndex(state, indice) {
+    // doing such a bothersome code to keep index order
+    // state._indexer = Object.assign(...[...Object.entries(state._indexer), ...Object.entries(indice)].map(pair => {pair[0], pair[1]}))
+    state._indexer = indice
+    applyIndex(state)
   }
 }
 
 export const actions = {
-  add({dispatch}, data) {
-    let id = db.collection('meetup').doc()
-    return dispatch('set', id, data)
+  setIndex({commit}, indice) {
+    commit('setIndex', indice)
+  },
+  add(_ctx, data) {
+    data.created_at = firebase.firestore.FieldValue.serverTimestamp() // add timestamp
+    return db.collection('meetup').add(data).then(ref => {
+      return ref.id
+    })
   },
   set({commit}, id, data, merge = true) {
     let doc = db.collection('meetup').doc(id)

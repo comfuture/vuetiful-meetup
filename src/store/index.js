@@ -22,6 +22,8 @@ export const plugins = [
         })
       })
     }
+    // apply index
+    store.dispatch('meetup/setIndex', {created_at: -1})
   }
 ]
 
