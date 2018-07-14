@@ -26,6 +26,7 @@
 <script>
 import Cookie from 'universal-cookie'
 import { mapGetters } from 'vuex'
+import firebase from '~/plugins/firebase-init'
 
 export default {
   name: 'login-box',
@@ -37,11 +38,6 @@ export default {
   },
   computed: {
     ...mapGetters(['user'])
-  },
-  mounted() {
-    firebase.auth().onAuthStateChanged(user => {
-      this.$store.commit('user', user)
-    })
   },
   methods: {
     signin() {

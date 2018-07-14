@@ -9,12 +9,11 @@ module.exports = {
     link: [
       {rel: 'icon', type: 'image/x-icon', href: '/favicon.ico'},
       {rel: 'stylesheet', type: 'text/css', href: 'https://cdn.jsdelivr.net/npm/semantic-ui@2.3.3/dist/semantic.min.css'}
-    ],
-    script: [
-      {hid: 'firebase', src: 'https://www.gstatic.com/firebasejs/5.2.0/firebase.js'},
-      {hid: 'firebase-init', src: '/firebase-init.js'}
     ]
   },
+  plugins: [
+    '~/plugins/vuetiful.js'
+  ],
   buildDir: '../prod/server/nuxt',
   build: {
     publicPath: '/assets/',
