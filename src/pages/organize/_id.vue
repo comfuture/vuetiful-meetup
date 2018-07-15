@@ -1,7 +1,15 @@
 <template>
   <div>
     <h1>밋업 상세</h1>
-    <div class="ui form segment">
+    <div class="ui top attached tabular menu">
+      <a class="item" :class="{active: activeTab === 'basic'}" @click="activateTab('basic')">
+        기본정보
+      </a>
+      <a class="item" :class="{active: activeTab === 'attendee'}" @click="activateTab('attendee')">
+        참여자 정보
+      </a>
+    </div>
+    <div class="ui bottom attached form segment" :class="{loading, active: activeTab === 'basic'}">
       <div class="field">
         <label for="">주제</label>
         <editable-input :editing="editing" v-model="meetup.subject" />
@@ -22,12 +30,15 @@
         <label for="">인원</label>
         <editable-input :editing="editing" v-model.number="meetup.maxAttendee" :stringify="String" :parse="Number" />
       </div>
-      <!-- <button class="ui primary button" @click="save">생성</button> -->
       <button class="ui teal button" @click="edit" v-if="!editing">수정</button>
       <div class="ui buttons" v-if="editing">
         <div class="ui primary button" @click="save">저장</div>
         <div class="ui button" @click="editing=false">취소</div>
       </div>
+      <div class="ui right floated red button">밋업 삭제</div>
+    </div>
+    <div class="ui bottom attached segment" :class="{active: activeTab === 'attendee'}">
+      참여자 정보 여기에...
     </div>
   </div>
 </template>
@@ -68,17 +79,30 @@ const EditableInput = {
 }
 export default {
   name: 'organize-id',
-  asyncData({route, store}) {
-    return {
-      editing: false,
-      meetup: {...store.getters['meetup/get'](route.params.id)}
-    }
-  },
   components: {
     EditableInput
   },
+  asyncData({route, store}) {
+    return {
+      meetup: {...store.getters['meetup/get'](route.params.id)}
+    }
+  },
+  data() {
+    return {
+      loading: false,
+      editing: false,
+      activeTab: 'basic'
+    }
+  },
+  computed: {
+    id() {
+      return this.$route.params.id
+    }
+  },
   mounted() {
-    !this.meetup && this.$store.dispatch('meetup/get', this.$route.params.id).then(ref => {
+    this.loading = true
+    this.$store.dispatch('meetup/get', this.id).then(ref => {
+      this.loading = false
       return ref.data()
     }).then(v => this.meetup = v)
   },
@@ -87,8 +111,23 @@ export default {
       this.editing = true
     },
     save() {
-      this.editing = false
+      this.loading = true
+      this.$store.dispatch('meetup/set', {id: this.id, data: this.meetup}).then(() => {
+        this.loading = false
+        this.editing = false
+      })
+    },
+    activateTab(name) {
+      this.activeTab = name
     }
   }
 }
 </script>
+<style>
+.ui.segment {
+  display: none;
+}
+.active.segment {
+  display: block;
+}
+</style>

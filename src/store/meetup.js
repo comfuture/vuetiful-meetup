@@ -20,9 +20,21 @@ function applyIndex(state) {
   state.index.splice(0, state.index.length, ...pairs.map(([id, _]) => id))
 }
 
+// XXX: https://github.com/firebase/firebase-js-sdk/issues/726
+function normalize(data) {
+  for (let key in data) {
+    if (data[key].hasOwnProperty('toDate')) { // XXX: Timestamp
+      data[key] = data[key].toDate()
+    } else if (data[key].hasOwnProperty('nanoseconds')) {
+      data[key] = new Date(data[key].seconds * 1000) // nanoseconds
+    }
+  }
+  return data
+}
+
 export const mutations = {
   set(state, doc) {
-    state.all[doc.id] = doc.data()
+    state.all[doc.id] = normalize(doc.data())
     applyIndex(state)
   },
   remove(state, id) {
@@ -46,7 +58,7 @@ export const actions = {
   },
   fetch({commit}) {
     return db.collection('meetup').get().then(snapshot => {
-      shapshot.forEach(doc => {
+      snapshot.forEach(doc => {
         commit('set', doc)
       })
     })
@@ -60,13 +72,13 @@ export const actions = {
       return ref.id
     })
   },
-  set({commit}, id, data, merge = true) {
+  set({commit}, {id, data, merge = true}) {
     let doc = db.collection('meetup').doc(id)
     let unsubscribe = doc.onSnapshot(doc => {
       doc.metadata.hasPendingWrites && commit('set', doc)
       unsubscribe()
     })
-    return doc.set(data, {merge}).then(ref => ref.id)
+    return doc.set(data, {merge})
   },
   remove({commit}, id) {
     db.collection('meetup').doc(id).delete().then(() => {
