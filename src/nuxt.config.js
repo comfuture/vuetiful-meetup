@@ -11,6 +11,11 @@ module.exports = {
       {rel: 'stylesheet', type: 'text/css', href: 'https://cdn.jsdelivr.net/npm/semantic-ui@2.3.3/dist/semantic.min.css'}
     ]
   },
+  css: [
+    'quill/dist/quill.snow.css',
+    'quill/dist/quill.bubble.css',
+    'quill/dist/quill.core.css'
+  ],
   plugins: [
     '~/plugins/vuetiful.js'
   ],

@@ -9,26 +9,31 @@
         참여자 정보
       </a>
     </div>
-    <div class="ui bottom attached form segment" :class="{loading, active: activeTab === 'basic'}">
+    <div class="ui bottom attached form pane segment" :class="{loading, active: activeTab === 'basic'}">
       <div class="field">
         <label for="">주제</label>
         <editable-input :editing="editing" v-model="meetup.subject" />
       </div>
-      <div class="field">
-        <label for="">장소</label>
-        <editable-input :editing="editing" v-model="meetup.place" />
+      <div class="fields">
+        <div class="six wide field">
+          <label for="">일시</label>
+          <editable-input :editing="editing" v-model="meetup.date" :parse="v => new Date(+v)">
+            <date-input time picker v-model="meetup.date" />
+          </editable-input>
+        </div>
+        <div class="eight wide field">
+          <label for="">장소</label>
+          <editable-input :editing="editing" v-model="meetup.place" />
+        </div>
+        <div class="two wide field">
+          <label for="">인원</label>
+          <editable-input :editing="editing" v-model.number="meetup.maxAttendee" :stringify="String" :parse="Number" />
+        </div>
       </div>
       <div class="field">
-        <label for="">일시</label>
-        <editable-input :editing="editing" v-model="meetup.date" :parse="v => new Date(+v)">
-          <flat-pickr v-model="meetup.date"
-            :config="{wrap: false, enableTime: true, dateFormat: 'Y-m-d H:i:S'}"
-            placeholder="날짜 선택" />
-        </editable-input>
-      </div>
-      <div class="field">
-        <label for="">인원</label>
-        <editable-input :editing="editing" v-model.number="meetup.maxAttendee" :stringify="String" :parse="Number" />
+        <label for="">상세</label>
+        <quill-editor v-if="editing" v-model="meetup.description"></quill-editor>
+        <div v-else v-html="meetup.description || ''"></div>
       </div>
       <button class="ui teal button" @click="edit" v-if="!editing">수정</button>
       <div class="ui buttons" v-if="editing">
@@ -37,8 +42,43 @@
       </div>
       <div class="ui right floated red button">밋업 삭제</div>
     </div>
-    <div class="ui bottom attached segment" :class="{active: activeTab === 'attendee'}">
-      참여자 정보 여기에...
+    <div class="ui bottom attached pane segment" :class="{active: activeTab === 'attendee'}">
+      <file-uploader :path="`meetup/${id}/attendee`"></file-uploader>
+      <table class="ui striped compact table">
+        <thead>
+          <tr>
+            <th>이메일</th>
+            <th>이름</th>
+            <th>역할</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>comfuture@gmail.com</td>
+            <td>김창균</td>
+            <td>
+              <div class="ui toggle checkbox">
+                <input type="checkbox" name="public">
+                <label>발표자</label>
+              </div>
+              <div class="ui toggle checkbox">
+                <input type="checkbox" name="public">
+                <label>스탭</label>
+              </div>
+            </td>
+            <td class="right aligned collapsing">
+              <button class="ui tiny red button">삭제</button>
+            </td>
+          </tr>
+          <tr>
+            <td>comfuture@gmail.com</td>
+            <td>김창균</td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </template>
@@ -91,7 +131,8 @@ export default {
     return {
       loading: false,
       editing: false,
-      activeTab: 'basic'
+      activeTab: 'basic',
+      meetup: {}
     }
   },
   computed: {
@@ -103,7 +144,10 @@ export default {
     this.loading = true
     this.$store.dispatch('meetup/get', this.id).then(ref => {
       this.loading = false
-      return ref.data()
+      let data = ref.data()
+      data['created_at'] = new Date(data['created_at'].seconds * 1000)
+      data['date'] = new Date(data['date'].seconds * 1000)
+      return data
     }).then(v => this.meetup = v)
   },
   methods: {
@@ -124,10 +168,13 @@ export default {
 }
 </script>
 <style>
-.ui.segment {
+.ui.pane.segment {
   display: none;
 }
-.active.segment {
+.active.pane.segment {
   display: block;
+}
+.toggle.checkbox {
+  margin-right: 1.5em;
 }
 </style>

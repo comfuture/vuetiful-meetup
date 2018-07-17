@@ -6,20 +6,23 @@
         <label for="">주제</label>
         <input type="text" v-model="meetup.subject">
       </div>
-      <div class="field">
-        <label for="">장소</label>
-        <input type="text" v-model="meetup.place">
+      <div class="fields">
+        <div class="six wide field">
+          <label for="">일시</label>
+          <date-input time picker v-model="meetup.date" />
+        </div>
+        <div class="eight wide field">
+          <label for="">장소</label>
+          <input type="text" v-model="meetup.place">
+        </div>
+        <div class="two wide field">
+          <label for="">인원</label>
+          <input type="text" v-model.number="meetup.maxAttendee">
+        </div>
       </div>
       <div class="field">
-        <label for="">일시</label>
-        <flat-pickr v-model="meetup.date"
-          :config="{wrap: false, enableTime: true, dateFormat: 'Y-m-d H:i:S K'}"
-          placeholder="날짜 선택">
-        </flat-pickr>
-      </div>
-      <div class="field">
-        <label for="">인원</label>
-        <input type="text" v-model.number="meetup.maxAttendee">
+        <label for="">상세</label>
+        <quill-editor v-model="meetup.description" />
       </div>
       <button class="ui primary button" @click="save">생성</button>
     </div>
@@ -35,8 +38,9 @@ export default {
       meetup: {
         subject: '',
         place: '',
-        date: +new Date(),
+        date: new Date(),
         maxAttendee: 0,
+        description: 'hello <b>world</b>',
         active: true
       }
     }
@@ -44,8 +48,6 @@ export default {
   methods: {
     save() {
       this.loading = true
-      // XXX: why vue does not have .date model binding?
-      this.meetup.date = new Date(Date.parse(this.meetup.date))
       this.$store.dispatch('meetup/add', this.meetup).then(() => {
         this.loading = false
         this.$router.replace({name: 'organize'})

@@ -23,9 +23,9 @@ function applyIndex(state) {
 // XXX: https://github.com/firebase/firebase-js-sdk/issues/726
 function normalize(data) {
   for (let key in data) {
-    if (data[key].hasOwnProperty('toDate')) { // XXX: Timestamp
+    if (data[key] && data[key].hasOwnProperty('toDate')) { // XXX: Timestamp
       data[key] = data[key].toDate()
-    } else if (data[key].hasOwnProperty('nanoseconds')) {
+    } else if (data[key] && data[key].hasOwnProperty('nanoseconds')) {
       data[key] = new Date(data[key].seconds * 1000) // nanoseconds
     }
   }

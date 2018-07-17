@@ -1,17 +1,17 @@
 const functions = require('firebase-functions')
 const { Nuxt } = require('nuxt')
 const express = require('express')
-const Cookie = require('universal-cookie')
+// const Cookie = require('universal-cookie')
 const app = express()
-const api = require('./api')
+// const api = require('./api')
 
-const admin = require('firebase-admin')
-const serviceAccount = require('./serviceAccountKey.json')
+// const admin = require('firebase-admin')
+// const serviceAccount = require('./serviceAccountKey.json')
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: 'https://vuetiful-meetup.firebaseio.com'
-})
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount),
+//   databaseURL: 'https://vuetiful-meetup.firebaseio.com'
+// })
 
 
 const config = {
@@ -23,24 +23,24 @@ const config = {
 }
 const nuxt = new Nuxt(config)
 
-// inject universal firebase/auth user
-app.use((req, res, next) => {
-  let ivy = new Cookie(req.headers.cookie)
-  let idToken = ivy.get('_sess')
-  if (idToken) {
-    admin.auth().verifyIdToken(idToken).then(user => {
-      req.user = user
-      next()
-    }).catch(e => {
-      next()
-    })
-  } else {
-    next()
-  }
-})
+// // inject universal firebase/auth user
+// app.use((req, res, next) => {
+//   let ivy = new Cookie(req.headers.cookie)
+//   let idToken = ivy.get('_sess')
+//   if (idToken) {
+//     admin.auth().verifyIdToken(idToken).then(user => {
+//       req.user = user
+//       next()
+//     }).catch(e => {
+//       next()
+//     })
+//   } else {
+//     next()
+//   }
+// })
 
-// add api routes middleware
-app.use('/api', api)
+// // add api routes middleware
+// app.use('/api', api)
 
 // add nuxt renderer middleware
 app.use((req, res) => {
@@ -51,5 +51,7 @@ app.use((req, res) => {
     })
   })
 })
+
+// functions.storage.object().onFinalize(key => )
 
 exports.nuxtssr = functions.https.onRequest(app)

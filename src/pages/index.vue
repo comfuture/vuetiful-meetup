@@ -1,7 +1,7 @@
 <template>
   <section>
     <site-logo/>
-    {{meetups}}
+    <meetup-item :id="id" v-bind="meetup" v-for="[id, meetup] in meetups" :key="id" />
   </section>
 </template>
 
