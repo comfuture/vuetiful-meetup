@@ -1,7 +1,11 @@
 <template>
   <section>
     <site-logo/>
-    <meetup-item :id="id" v-bind="meetup" v-for="[id, meetup] in meetups" :key="id" />
+    <div v-for="[id, meetup] in activeMeetups" :key="id">
+      <div class="ui green label">진행중</div>
+      {{meetup.subject}}
+    </div>
+    <div v-if="activeMeetups.length === 0">진행중인 밋업이 없습니다</div>
   </section>
 </template>
 
@@ -16,7 +20,10 @@ export default {
     SiteLogo, LoginBox
   },
   computed: {
-    ...mapGetters({meetups: 'meetup/all'})
+    ...mapGetters({meetups: 'meetup/all'}),
+    activeMeetups() {
+      return this.meetups.filter(([id, meetup]) => meetup.active)
+    }
   }
 }
 </script>

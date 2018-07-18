@@ -24,6 +24,12 @@
         <label for="">상세</label>
         <quill-editor v-model="meetup.description" />
       </div>
+      <div class="field">
+        <div class="ui toggle checkbox">
+          <input id="active-toggle" type="checkbox" :value="true" v-model="meetup.active">
+          <label for="active-toggle">활성화</label>
+        </div>
+      </div>
       <button class="ui primary button" @click="save">생성</button>
     </div>
   </div>

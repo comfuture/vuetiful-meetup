@@ -5,6 +5,8 @@ import MeetupItem from '~/components/meetup-item'
 import FileUploader from '~/components/file-uploader'
 import QuillEditor from '~/components/quill-editor'
 
+// moment.locale('ko')
+
 Vue.filter('ago', v => moment(v).fromNow())
 Vue.filter('date', (v, fmt = 'LLL') => moment(v).format(fmt))
 

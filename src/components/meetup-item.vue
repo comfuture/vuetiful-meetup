@@ -3,9 +3,8 @@
     <div class="content">
       <div class="header">{{subject}}</div>
       <div class="meta"><i class="map marker icon"></i>{{place}}</div>
-      <div class="description" v-html="description"></div>
       <div class="ui green top right attached label" v-if="active">Active</div>
-      <div class="ui right top corner label" v-else>Inactive</div>
+      <div class="ui top right attached label" v-else>Inactive</div>
     </div>
     <div class="extra content">
       <span class="right floated">
