@@ -2,7 +2,7 @@
   <div>
     <form class="ui dropzone segment" data-tooltip="xlsx 또는 csv 파일을 업로드하세요" data-position="bottom left">
       <!-- <input type="file"> -->
-      <button class="ui primary button">찾아보기...</button> 또는 끌어다 놓기
+      <input type="file" @change="upload($event.target.files[0])" /> 또는 끌어다 놓기
       <div class="ui bottom attached orange progress">
         <div class="bar" :style="{width: `${this.progress}%`}"></div>
       </div>
@@ -52,19 +52,19 @@ export default {
       form.classList.remove('over')
       for (let file of  e.dataTransfer.files) {
         // this.files.push(file)
-        let uploadJob = storage.ref().child(`${this.path}/${file.name}`).put(file)
-        uploadJob.on('state_changed', snapshot => {
-          this.progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-        })
-        uploadJob.then(() => {
-          alert('upload done!')
-        })
+        this.upload(file)
       }
     })
   },
   methods: {
-    upload() {
-      //
+    upload(file) {
+      let uploadJob = storage.ref().child(`${this.path}/${file.name}`).put(file)
+      uploadJob.on('state_changed', snapshot => {
+        this.progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+      })
+      uploadJob.then(() => {
+        // alert('upload done!')
+      })
     }
   }
 }
@@ -80,6 +80,6 @@ export default {
 }
 
 .dropzone.over {
-  background-color: red;
+  background-color: #50B2AC;
 }
 </style>

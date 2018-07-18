@@ -35,47 +35,56 @@
         <quill-editor v-if="editing" v-model="meetup.description"></quill-editor>
         <div v-else v-html="meetup.description || ''"></div>
       </div>
+      <div class="field">
+        <label for="">활성화</label>
+        <div class="ui toggle checkbox">
+          <input type="checkbox" name="active" :value="true" v-model="meetup.active" @change="applyActive">
+          <label>밋업 게시</label>
+        </div>
+      </div>
       <button class="ui teal button" @click="edit" v-if="!editing">수정</button>
       <div class="ui buttons" v-if="editing">
-        <div class="ui primary button" @click="save">저장</div>
-        <div class="ui button" @click="editing=false">취소</div>
+        <button class="ui primary button" @click="save">저장</button>
+        <button class="ui button" @click="editing=false">취소</button>
       </div>
-      <div class="ui right floated red button">밋업 삭제</div>
+      <div class="ui right floated red button" v-if="!deleteConfirming" @click="deleteConfirming=true">밋업 삭제</div>
+      <div class="ui right floated buttons" v-if="deleteConfirming">
+        <button class="ui red button" @click="removeMeetup">정말로 삭제</button>
+        <button class="ui button" @click="deleteConfirming=false">삭제하지 않기</button>
+      </div>
     </div>
     <div class="ui bottom attached pane segment" :class="{active: activeTab === 'attendee'}">
       <file-uploader :path="`meetup/${id}/attendee`"></file-uploader>
       <table class="ui striped compact table">
         <thead>
           <tr>
-            <th>이메일</th>
             <th>이름</th>
+            <th>이메일</th>
+            <th>전화번호</th>
             <th>역할</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>comfuture@gmail.com</td>
-            <td>김창균</td>
-            <td>
+          <tr v-for="[id, attendee] in attendees" :key="id">
+            <td>{{attendee.name}}</td>
+            <td>{{attendee.email}}</td>
+            <td>{{attendee.phone}}</td>
+            <td class="collapsing">
               <div class="ui toggle checkbox">
-                <input type="checkbox" name="public">
+                <input type="checkbox" name="speaker" :value="true" v-model="attendee.speaker"
+                  @change="updateAttendeeRole(id, {speaker: $event.target.checked})">
                 <label>발표자</label>
               </div>
               <div class="ui toggle checkbox">
-                <input type="checkbox" name="public">
+                <input type="checkbox" name="staff" :value="true" v-model="attendee.staff"
+                  @change="updateAttendeeRole(id, {staff: $event.target.checked})">
                 <label>스탭</label>
               </div>
             </td>
             <td class="right aligned collapsing">
-              <button class="ui tiny red button">삭제</button>
+              <button class="ui tiny red button" @click="removeAttendee(id)">삭제</button>
             </td>
-          </tr>
-          <tr>
-            <td>comfuture@gmail.com</td>
-            <td>김창균</td>
-            <td></td>
-            <td></td>
           </tr>
         </tbody>
       </table>
@@ -83,6 +92,8 @@
   </div>
 </template>
 <script>
+import { db } from '~/plugins/firebase-init'
+
 const EditableInput = {
   props: {
     editing: Boolean,
@@ -131,16 +142,30 @@ export default {
     return {
       loading: false,
       editing: false,
+      deleteConfirming: false,
       activeTab: 'basic',
-      meetup: {}
+      meetup: {},
+      attendees_: {
+        data: {},
+        index: []
+      }
     }
   },
   computed: {
     id() {
       return this.$route.params.id
+    },
+    attendees: {
+      get() {
+        return this.attendees_.index.map(id => [id, this.attendees_.data[id]])
+      },
+      set(value) {
+        // ignore
+      }
     }
   },
   mounted() {
+    // load meetup again
     this.loading = true
     this.$store.dispatch('meetup/get', this.id).then(ref => {
       this.loading = false
@@ -149,6 +174,26 @@ export default {
       data['date'] = new Date(data['date'].seconds * 1000)
       return data
     }).then(v => this.meetup = v)
+    // watch attendee
+    db.doc(`meetup/${this.id}`).collection('attendee').onSnapshot(snapshot => {
+      snapshot.docChanges().forEach(({type, doc}) => {
+        if (['added', 'modified'].includes(type)) {
+          this.attendees_.data[doc.id] = doc.data()
+          let ix = this.attendees_.index.indexOf(doc.id)
+          if (ix === -1) {
+            this.attendees_.index.push(doc.id)
+          }
+        }
+        if (type === 'removed') {
+          delete this.attendees_.data[doc.id]
+          let ix = this.attendees_.index.indexOf(doc.id)
+          if (ix > -1) {
+            this.attendees_.index.splice(ix, 1)
+          }
+        }
+      })
+    })
+
   },
   methods: {
     edit() {
@@ -160,6 +205,15 @@ export default {
         this.loading = false
         this.editing = false
       })
+    },
+    applyActive() {
+      db.collection('meetup').doc(this.id).update({active: this.meetup.active})
+    },
+    removeAttendee(id) {
+      db.doc(`meetup/${this.id}/attendee/${id}`).delete()
+    },
+    updateAttendeeRole(id, what) {
+      db.doc(`meetup/${this.id}/attendee/${id}`).update(what)
     },
     activateTab(name) {
       this.activeTab = name
