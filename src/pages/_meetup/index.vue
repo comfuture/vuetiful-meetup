@@ -5,15 +5,13 @@
       <thead>
         <tr class="sticky row">
           <th colspan="4" class="ui shrinked menu-">
-            <div class="ui category search item">
-              <div class="ui transparent- icon input">
-                <input class="prompt" type="text" placeholder="Search anything..."
-                  @keyup="keyword=$event.target.value"
-                  @keyup.esc="keyword=''"
-                  v-model="keyword" v-focus-forever>
-                <i class="close link icon" v-if="keyword" @click="keyword=''"></i>
-                <i class="search link icon" v-else></i>
-              </div>
+            <div class="ui transparent- icon input">
+              <input class="prompt" type="text" placeholder="Search anything..."
+                @keyup="keyword=$event.target.value"
+                @keyup.esc="keyword=''"
+                v-model="keyword" v-focus-forever>
+              <i class="close link icon" v-if="keyword" @click="keyword=''"></i>
+              <i class="search link icon" v-else></i>
             </div>
           </th>
         </tr>
@@ -84,9 +82,9 @@ export default {
         return this.attendees
       }
       let escaped = this.keyword.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&')
-      let re = new RegExp(`^${breakKorean(escaped)}`, 'gi')
+      let re = new RegExp(`^${c2(breakKorean(escaped))}`, 'gi')
       return this.attendees.filter(([id, item]) => {
-        return re.test(breakKorean(item.name)) || re.test(item.email)
+        return re.test(c2(breakKorean(item.name))) || re.test(item.email)
       })
     }
   },
@@ -134,6 +132,21 @@ function breakKorean(str) {
     broken += sylables.L[il] + sylables.V[iv] + sylables.T[it]
   }
   return broken
+}
+
+function c2(broken) {
+  let h = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ'.split('')
+  let e = 'r,R,s,e,E,f,a,q,Q,t,T,d,w,W,c,z,x,v,g,k,o,i,O,j,p,u,P,h,hk,ho,hl,y,n,nj,np,nl,b,m,ml,l'.split(',')
+  let c2 = ''
+  for (let c of broken) {
+    let ix = h.indexOf(c)
+    if (ix === -1) {
+      c2 += c
+      continue
+    }
+    c2 += e[ix]
+  }
+  return c2
 }
 </script>
 
