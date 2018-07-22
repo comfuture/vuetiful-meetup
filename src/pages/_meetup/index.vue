@@ -84,9 +84,9 @@ export default {
         return this.attendees
       }
       let escaped = this.keyword.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&')
-      let re = new RegExp(`^${escaped}`, 'gi')
+      let re = new RegExp(`^${breakKorean(escaped)}`, 'gi')
       return this.attendees.filter(([id, item]) => {
-        return re.test(item.name) || re.test(item.email)
+        return re.test(breakKorean(item.name)) || re.test(item.email)
       })
     }
   },
@@ -111,6 +111,29 @@ export default {
       })
     })
   }
+}
+
+function breakKorean(str) {
+  let [base, numS, numT, numN] = [0xAC00, 11172, 28, 588]
+  let sylables = {
+    L: 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ'.split(''),
+    V: 'ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ'.split(''),
+    T: ',ㄱ,ㄲ,ㄱㅅ,ㄴ,ㄴㅈ,ㄴㅎ,ㄷ,ㄹ,ㄹㄱ,ㄹㅁ,ㄹㅂ,ㄹㅅ,ㄹㅌ,ㄹㅍ,ㄹㅎ,ㅁ,ㅂ,ㅂㅅ,ㅅ,ㅆ,ㅇ,ㅈ,ㅊ,ㅋ,ㅌ,ㅍ,ㅎ'.split(',')
+  }
+  let broken = ''
+  for (let c of str) {
+    let code = c.charCodeAt()
+    let ix = code - base
+    if (0 > ix || ix > numS) {
+      broken += c
+      continue
+    }
+    let il = Math.floor(ix / numN)
+    let iv = Math.floor((ix % numN) / numT)
+    let it = Math.floor(ix % numT)
+    broken += sylables.L[il] + sylables.V[iv] + sylables.T[it]
+  }
+  return broken
 }
 </script>
 
