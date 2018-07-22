@@ -1,0 +1,144 @@
+<template>
+  <section>
+    <h1>{{meetup.subject}}</h1>
+    <table class="ui celled striped table">
+      <thead>
+        <tr class="sticky row">
+          <th colspan="4" class="ui shrinked menu-">
+            <div class="ui category search item">
+              <div class="ui transparent- icon input">
+                <input class="prompt" type="text" placeholder="Search anything..."
+                  @keyup="keyword=$event.target.value"
+                  @keyup.esc="keyword=''"
+                  v-model="keyword" v-focus-forever>
+                <i class="close link icon" v-if="keyword" @click="keyword=''"></i>
+                <i class="search link icon" v-else></i>
+              </div>
+            </div>
+          </th>
+        </tr>
+        <tr>
+          <th>참석여부</th>
+          <th>이름</th>
+          <th>이메일</th>
+          <th>전화번호</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="[id, attendee] in filteredAttendees" :key="id">
+          <td class="collapsing"><div class="ui label">미참석</div></td>
+          <td>
+            {{attendee.name}}
+          </td>
+          <td>
+            {{attendee.email}}
+          </td>
+          <td>
+            -
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</template>
+<script>
+import { db } from '~/plugins/firebase-init'
+export default {
+  name: 'meetup-index',
+  directives: {
+    focusForever: {
+      inserted: function (el) {
+        el.focus()
+        el.addEventListener('blur', e => {
+          el.focus()
+        }, true)
+      }
+    }
+  },
+  data() {
+    return {
+      keyword: '',
+      attendees_: {
+        data: {},
+        index: []
+      }
+    }
+  },
+  computed: {
+    id() {
+      return this.$route.params.meetup
+    },
+    meetup() {
+      return this.$store.getters['meetup/get'](this.id)
+    },
+    attendees: {
+      get() {
+        return this.attendees_.index.map(id => [id, this.attendees_.data[id]])
+      },
+      set(value) {
+        // ignore
+      }
+    },
+    filteredAttendees() {
+      if (!this.keyword) {
+        return this.attendees
+      }
+      let escaped = this.keyword.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&')
+      let re = new RegExp(`^${escaped}`, 'gi')
+      return this.attendees.filter(([id, item]) => {
+        return re.test(item.name) || re.test(item.email)
+      })
+    }
+  },
+  mounted() {
+    // watch attendee
+    db.doc(`meetup/${this.id}`).collection('attendee').onSnapshot(snapshot => {
+      snapshot.docChanges().forEach(({type, doc}) => {
+        if (['added', 'modified'].includes(type)) {
+          this.attendees_.data[doc.id] = doc.data()
+          let ix = this.attendees_.index.indexOf(doc.id)
+          if (ix === -1) {
+            this.attendees_.index.push(doc.id)
+          }
+        }
+        if (type === 'removed') {
+          delete this.attendees_.data[doc.id]
+          let ix = this.attendees_.index.indexOf(doc.id)
+          if (ix > -1) {
+            this.attendees_.index.splice(ix, 1)
+          }
+        }
+      })
+    })
+  }
+}
+</script>
+
+<style scoped>
+.ui.table thead th.shrinked {
+  padding: 0;
+}
+.ui.search .prompt {
+  border-radius: inherit;
+}
+.sticky.row {
+  /* position: fixed; */
+  /* top: 60px; */
+  /* position:fixed; top: 40px; */
+}
+
+@media only screen and (max-width: 767px) {
+  .ui.table thead tr {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  .ui.table thead tr:nth-child(2) {
+    /* background-color: red; */
+    display: none !important;
+  }
+
+  .ui.table tbody td {
+    display: inline-block !important;
+  }
+}
+</style>
