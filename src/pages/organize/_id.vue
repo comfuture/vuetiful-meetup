@@ -165,15 +165,6 @@ export default {
     }
   },
   mounted() {
-    // load meetup again
-    this.loading = true
-    this.$store.dispatch('meetup/get', this.id).then(ref => {
-      this.loading = false
-      let data = ref.data()
-      data['created_at'] = new Date(data['created_at'].seconds * 1000)
-      data['date'] = new Date(data['date'].seconds * 1000)
-      return data
-    }).then(v => this.meetup = v)
     // watch attendee
     db.doc(`meetup/${this.id}`).collection('attendee').onSnapshot(snapshot => {
       snapshot.docChanges().forEach(({type, doc}) => {
