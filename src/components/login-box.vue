@@ -1,26 +1,31 @@
 <template>
-  <section class="login-box">
-    <template v-if="user">
-      <div class="item">
-        {{user.email}} 님 안녕하세요
-      </div>
-      <div class="item">
-        <button @click="signout">로그아웃</button>
-      </div>
-    </template>
-    <template v-else-if="emailSent">
-      <div class="item">
-        {{email}}로 인증 메일이 발송되었습니다. 메일함으로 이동하여 나머지 절차를 진행해주세요.
-      </div>
-    </template>
-    <template v-else>
-      <div class="item">
-        <input type="email" placeholder="your@email.com" v-model="email">
-      </div>
-      <div class="item">
-        <button @click="signin">이메일로 로그인</button>
-      </div>
-    </template>
+  <section>
+    <div class="ui top attached segment">
+      <strong>로그인</strong>
+    </div>
+    <div class="ui bottom attached form segment">
+      <template v-if="user">
+        <div class="item">
+          {{user.email}} 님 안녕하세요
+        </div>
+        <div class="item">
+          <button @click="signout" class="ui button">로그아웃</button>
+        </div>
+      </template>
+      <template v-else-if="emailSent">
+        <div class="item">
+          {{email}}로 인증 메일이 발송되었습니다. 메일함으로 이동하여 나머지 절차를 진행해주세요.
+        </div>
+      </template>
+      <template v-else>
+        <div class="field">
+          <input type="email" placeholder="your@email.com" v-model="email">
+        </div>
+        <div class="field">
+          <button @click="signin" class="ui fluid primary button">이메일로 로그인</button>
+        </div>
+      </template>
+    </div>
   </section>
 </template>
 <script>
@@ -41,13 +46,12 @@ export default {
   },
   methods: {
     signin() {
-      let resolved = this.$router.resolve({name: 'auth-callback'})
+      let resolved = this.$router.resolve({name: 'auth-callback', query: {email: this.email}})
       let url = `${location.protocol}//${location.host}${resolved.route.fullPath}`
       firebase.auth().sendSignInLinkToEmail(this.email, {
         url,
         handleCodeInApp: true
       }).then(() => {
-        window.localStorage.setItem('emailForSignIn', this.email)
         this.emailSent = true
       }).catch(e => {
         // error!
@@ -69,20 +73,16 @@ export default {
 }
 </script>
 <style scoped>
-.login-box {
+section {
   margin: auto;
   margin-top: 2em;
   margin-bottom: 2em;
   padding: 1em 2em;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-shadow: 2px 2px 2px 0px rgba(0,0,0,0.3);
   max-width: 400px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
-
 .item {
   padding: .5em 0;
 }

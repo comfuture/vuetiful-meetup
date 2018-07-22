@@ -11,7 +11,7 @@
           {{$store.getters.user.email}} <i class="dropdown icon"></i>
           <div class="menu">
             <a class="item" href="#">프로필</a>
-            <a class="item" href="#">로그아웃</a>
+            <a class="item" @click="logout">로그아웃</a>
           </div>
         </div>
       </div>
@@ -19,7 +19,11 @@
   </header>
 </template>
 <script>
+import { mapActions } from 'vuex'
 export default {
-  name: 'app-header'
+  name: 'app-header',
+  methods: {
+    ...mapActions(['logout'])
+  }
 }
 </script>

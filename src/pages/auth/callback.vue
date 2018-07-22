@@ -9,13 +9,11 @@ export default {
   name: 'auth-callback',
   mounted() {
     if (firebase.auth().isSignInWithEmailLink(window.location.href)) {
-      let email = window.localStorage.getItem('emailForSignIn')
+      let email = this.$route.query.email
       firebase.auth().signInWithEmailLink(email, window.location.href).then(result => {
-        window.localStorage.removeItem('emailForSignIn')
         this.$router.push('/')
-        result.user
       }).catch(e => {
-        window.localStorage.removeItem('emailForSignIn')
+        alert(e)
       })
     }
   }
