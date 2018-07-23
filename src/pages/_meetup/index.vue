@@ -1,17 +1,17 @@
 <template>
   <section>
     <h1>{{meetup.subject}}</h1>
-    <table class="ui celled striped table">
+    <table class="ui selectable celled striped table">
       <thead>
-        <tr class="sticky row">
-          <th colspan="4" class="ui shrinked menu-">
+        <tr>
+          <th colspan="4" class="shrinked">
             <div class="ui transparent- icon input">
               <input class="prompt" type="text" placeholder="Search anything..."
                 @keyup="keyword=$event.target.value"
                 @keyup.esc="keyword=''"
                 v-model="keyword" v-focus-forever>
               <i class="close link icon" v-if="keyword" @click="keyword=''"></i>
-              <i class="search link icon" v-else></i>
+              <i class="search icon" v-else></i>
             </div>
           </th>
         </tr>
@@ -23,8 +23,11 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="[id, attendee] in filteredAttendees" :key="id">
-          <td class="collapsing"><div class="ui label">미참석</div></td>
+        <tr v-for="[id, attendee] in filteredAttendees" :key="id" @click="popup(id)">
+          <td class="collapsing">
+            <div class="ui green label" v-if="attendee.attend">참석</div>
+            <div class="ui label" v-else>미참석</div>
+          </td>
           <td>
             {{attendee.name}}
           </td>
@@ -37,6 +40,26 @@
         </tr>
       </tbody>
     </table>
+    <ui-modal :active.sync="modalVisible">
+      <div slot="header">출석확인</div>
+      <div v-if="selectedId">
+        <p>{{selectedAttendee.name}}
+          <span class="ui teal label">발표자</span>
+          <span class="ui orange label">스탭</span>
+        </p>
+        <p>{{selectedAttendee.email}}</p>
+        <div class="ui toggle checkbox">
+          <input type="checkbox" id="agree" checked :value="true">
+          <label for="agree">사진 활용에 동의합니다.</label>
+        </div>
+      </div>
+      <div slot="actions">
+        <div class="ui fluid buttons">
+          <div class="ui green ok button" @click="attend(true)">참석</div>
+          <div class="ui dismiss button" @click="attend(false)">미참석</div>
+        </div>
+      </div>
+    </ui-modal>
   </section>
 </template>
 <script>
@@ -58,8 +81,11 @@ export default {
       keyword: '',
       attendees_: {
         data: {},
-        index: []
-      }
+        index: [],
+        order: {name: 1}
+      },
+      selectedId: null,
+      modalVisible: false
     }
   },
   computed: {
@@ -86,6 +112,9 @@ export default {
       return this.attendees.filter(([id, item]) => {
         return re.test(c2(breakKorean(item.name))) || re.test(item.email)
       })
+    },
+    selectedAttendee() {
+      return this.attendees_.data[this.selectedId]
     }
   },
   mounted() {
@@ -94,20 +123,41 @@ export default {
       snapshot.docChanges().forEach(({type, doc}) => {
         if (['added', 'modified'].includes(type)) {
           this.attendees_.data[doc.id] = doc.data()
-          let ix = this.attendees_.index.indexOf(doc.id)
-          if (ix === -1) {
-            this.attendees_.index.push(doc.id)
-          }
+          this.applyIndex()
         }
         if (type === 'removed') {
           delete this.attendees_.data[doc.id]
-          let ix = this.attendees_.index.indexOf(doc.id)
-          if (ix > -1) {
-            this.attendees_.index.splice(ix, 1)
-          }
+          this.applyIndex()
         }
       })
     })
+  },
+  methods: {
+    applyIndex() {
+      // apply index
+      let pairs = Object.entries(this.attendees_.data)
+      for (let [key, order] of Object.entries(this.attendees_.order)) {
+        console.log(key, order)
+        pairs.sort((a, b) => a[1][key] > b[1][key] ? order : -order)
+      }
+      this.attendees_.index.splice(0, this.attendees_.index.length, ...pairs.map(([id, _]) => id))
+    },
+    popup(id) {
+      console.log(id)
+      this.selectedId = id
+      this.modalVisible = true
+    },
+    attend(how) {
+      db.doc(`meetup/${this.id}`).collection('attendee').doc(this.selectedId).update({
+        attend: how
+      }).then(() => {
+        this.dismiss()
+      })
+    },
+    dismiss() {
+      this.selectedId = null
+      this.modalVisible = false
+    }
   }
 }
 
@@ -148,6 +198,7 @@ function c2(broken) {
   }
   return c2
 }
+
 </script>
 
 <style scoped>

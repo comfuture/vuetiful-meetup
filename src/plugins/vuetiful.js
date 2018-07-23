@@ -4,6 +4,8 @@ import DateInput from '~/components/date-input'
 import MeetupItem from '~/components/meetup-item'
 import FileUploader from '~/components/file-uploader'
 import QuillEditor from '~/components/quill-editor'
+import Transition from '~/components/ui-transition'
+import UIModal from '~/components/ui-modal'
 
 // moment.locale('ko')
 
@@ -14,3 +16,5 @@ Vue.component('date-input', DateInput)
 Vue.component('meetup-item', MeetupItem)
 Vue.component('file-uploader', FileUploader)
 Vue.component('quill-editor', QuillEditor)
+Vue.use(Transition)
+Vue.component('ui-modal', UIModal)

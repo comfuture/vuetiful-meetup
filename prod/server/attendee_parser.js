@@ -23,7 +23,7 @@ function guessOffset(row) {
 }
 
 module.exports = function(event) {
-  let re = /^meetup/[a-zA-Z0-9]+/.*\.xlsx/
+  let re = /^meetup\/[a-zA-Z0-9]+\/attendee\/.*\.xlsx/gi
   if (!re.test(event.name)) {
     return Promise.resolve()
   }
@@ -51,7 +51,8 @@ module.exports = function(event) {
         name: row[ix.name],
         email: row[ix.email],
         staff: false,
-        speaker: false
+        speaker: false,
+        attend: false
       }
       jobs.push(collection.add(doc))
     }
