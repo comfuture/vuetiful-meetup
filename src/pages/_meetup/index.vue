@@ -5,7 +5,11 @@
       <thead>
         <tr>
           <th colspan="4" class="shrinked">
-            <div class="ui transparent- icon input">
+            <div class="ui left action icon input">
+              <button class="ui teal labeled icon button" @click="qrmode=true">
+                <i class="qrcode icon"></i>
+                Scan
+              </button>
               <input class="prompt" type="text" placeholder="Search anything..."
                 @keyup="keyword=$event.target.value"
                 @keyup.esc="keyword=''"
@@ -40,6 +44,7 @@
         </tr>
       </tbody>
     </table>
+    <qr-reader v-if="qrmode" :active.sync="qrmode" @result="qrDecoded" />
     <ui-modal :active.sync="modalVisible">
       <div slot="header">출석확인</div>
       <div v-if="selectedId">
@@ -64,8 +69,13 @@
 </template>
 <script>
 import { db } from '~/plugins/firebase-init'
+import QrReader from '~/components/qr-reader'
+
 export default {
   name: 'meetup-index',
+  components: {
+    QrReader
+  },
   directives: {
     focusForever: {
       inserted: function (el) {
@@ -85,7 +95,8 @@ export default {
         order: {name: 1}
       },
       selectedId: null,
-      modalVisible: false
+      modalVisible: false,
+      qrmode: false
     }
   },
   computed: {
@@ -157,6 +168,11 @@ export default {
     dismiss() {
       this.selectedId = null
       this.modalVisible = false
+    },
+    qrDecoded(id) {
+      this.selectedId = id
+      this.modalVisible = true
+      this.qrmode = false
     }
   }
 }
